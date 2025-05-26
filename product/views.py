@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework import generics
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .models import Category, Product, Review
 from .serializers import CategorySerializer, ProductSerializer, ReviewSerielizer, ProductWithReviewsSerializer
 from django.db.models import Avg, Count
@@ -30,3 +31,29 @@ class CategoryListAPIView(generics.ListAPIView):
     queryset = Category.objects.annotate(products_count=Count('product'))
     serializer_class = CategorySerializer
     
+class CategoryListCreateView(ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class CategoryDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    lookup_field = 'id'
+
+class ProductListCreateView(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class ProductDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'id'
+
+class ReviewListCreateView(ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerielizer
+
+class ReviewDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerielizer
+    lookup_field = 'id'
