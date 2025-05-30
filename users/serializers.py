@@ -1,7 +1,37 @@
 
 from rest_framework import serializers
 from .models import User, ConfirmationCode
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
+
+User = get_user_model()
+
+class ConfirmSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    code = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        username = data.get('username')
+        code = data.get('code')
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Пользователь не найден.")
+
+        if user.is_active:
+            raise serializers.ValidationError("Пользователь уже активирован.")
+
+        if user.confirmation_code != code:
+            raise serializers.ValidationError("Неверный код подтверждения.")
+
+        return data
+
+    def save(self):
+        user = User.objects.get(username=self.validated_data['username'])
+        user.is_active = True
+        user.confirmation_code = None
+        user.save()
+        return user
 
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,3 +73,4 @@ class LoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise serializers.ValidationError("Пользователь не подтвержден.")
         return {"user": user}
+

@@ -2,10 +2,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, ConfirmationSerializer, LoginSerializer
+from .serializers import RegistrationSerializer, ConfirmationSerializer, LoginSerializer, ConfirmSerializer
 from rest_framework.authtoken.models import Token
 from .models import User, ConfirmationCode
 from rest_framework import status
+from rest_framework.views import TokenObtainPairView
+from rest_framework.views import TokenObtainPairSerializer
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -33,3 +36,14 @@ class LoginView(APIView):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response({"token": token.key})
+    
+class ConfirmUserView(APIView):
+    def post(self, request):
+        serializer = ConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Пользователь успешно подтвержден."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class Login(TokenObtainPairView):
+    serializer_class = TokenObtainPairSerializer
